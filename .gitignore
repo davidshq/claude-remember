@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Bun
+bun.lockb
+
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs (don't commit actual logs)
+*.db
+*.db-wal
+*.db-shm
+
+# Test artifacts
+coverage/
