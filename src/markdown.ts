@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync, appendFileSync, readdirSync } from "fs";
 import { join, basename } from "path";
-import { getConfig, getDateDir, debugLog } from "./config";
+import { getConfig, getDateDir, getSessionsDir, debugLog } from "./config";
 import { getSessionMarkdownPath, updateSessionMarkdownPath } from "./db";
 import type { MessageRecord, SessionRecord, ToolInput, BashToolInput, WriteToolInput, EditToolInput, ReadToolInput } from "./types";
 
@@ -283,17 +283,22 @@ export function finalizeMarkdownFile(sessionId: string, status: string, projectP
   }
 }
 
-// Search for existing file by session ID in filename (checks today and yesterday)
+// Search for existing file by session ID in filename (checks all date directories)
 function searchForSessionFile(sessionId: string): string | null {
   const shortSessionId = sessionId.substring(0, 8);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+  const sessionsDir = getSessionsDir();
 
-  for (const date of [today, yesterday]) {
-    const dateDir = getDateDir(date);
-    if (!existsSync(dateDir)) continue;
+  if (!existsSync(sessionsDir)) return null;
 
+  // Check all date directories (handles timezone transitions and multi-day sessions)
+  const dateDirs = readdirSync(sessionsDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && /^\d{4}-\d{2}-\d{2}$/.test(d.name))
+    .map((d) => d.name)
+    .sort()
+    .reverse(); // Most recent first
+
+  for (const dirName of dateDirs) {
+    const dateDir = join(sessionsDir, dirName);
     const files = readdirSync(dateDir);
     for (const file of files) {
       // Match files containing the session ID (format: NN_HHMMSS_sessionid_project.md)
