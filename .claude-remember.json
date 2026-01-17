@@ -1,0 +1,4 @@
+{
+  "logDir": "/home/dave/repos/claude-remember-logs/.logs",
+  "dbPath": "/home/dave/repos/claude-remember-logs/.logs/sessions.db"
+}
